@@ -1,0 +1,26 @@
+:root {
+  --primary: #4f46e5;
+  --bg: #f9fafb;
+  --text: #111827;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --border: #e5e7eb;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  color: var(--text); background: var(--bg);
+}
+header, nav, main { max-width: 900px; margin: 0 auto; padding: 16px; }
+nav a { margin-right: 12px; color: var(--primary); text-decoration: none; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 12px 0; }
+button {
+  background: var(--primary); color: white; border: none; border-radius: 6px; padding: 10px 14px; cursor: pointer;
+}
+input, select, textarea {
+  width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; margin: 6px 0 12px;
+}
+.grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.flex { display: flex; gap: 12px; align-items: center; }
+.badge { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; border-radius: 999px; padding: 3px 8px; display: inline-block; margin-right: 6px; }

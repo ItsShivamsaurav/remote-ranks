@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Match - Peer Study</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="schedule.html">Schedule</a>
+</nav>
+<main>
+  <div class="card">
+    <h2>Find peers by subject</h2>
+    <div class="flex">
+      <select id="subjectSelect"></select>
+      <button id="search">Search</button>
+    </div>
+    <div id="results" class="grid"></div>
+  </div>
+</main>
+<script type="module">
+import { api, requireAuthRedirect } from './js/main.js';
+requireAuthRedirect();
+
+async function loadSubjects() {
+  const all = await api('/subjects');
+  const sel = document.getElementById('subjectSelect');
+  sel.innerHTML = all.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join('');
+}
+document.getElementById('search').onclick = async () => {
+  const subject_id = document.getElementById('subjectSelect').value;
+  const peers = await api(`/match/peers?subject_id=${subject_id}`);
+  const container = document.getElementById('results');
+  container.innerHTML = peers.map(p => `
+    <div class="card">
+      <h3>${p.name}</h3><p>${p.bio || ''}</p>
+      <div class="flex">
+        <button data-id="${p.user_id}" class="overlap">Suggest overlap</button>
+        <button data-id="${p.user_id}" data-subject="${subject_id}" class="propose">Propose session</button>
+      </div>
+    </div>`).join('');
+  container.querySelectorAll('.overlap').forEach(b => b.onclick = async () => {
+    const ov = await api(`/match/overlap/${b.dataset.id}`);
+    alert(ov.message || `${ov.day_of_week} ${ov.start_time} - ${ov.end_time}`);
+  });
+  container.querySelectorAll('.propose').forEach(b => b.onclick = async () => {
+    const dt = prompt('Enter date/time (YYYY-MM-DD HH:MM)');
+    if (!dt) return;
+    await api('/sessions/propose', {
+      method: 'POST',
+      body: JSON.stringify({
+        peer_id: Number(b.dataset.id),
+        subject_id: Number(b.dataset.subject),
+        scheduled_time: dt + ':00'
+      })
+    });
+    alert('Proposed!');
+  });
+};
+loadSubjects();
+</script>
+</body>
+</html>

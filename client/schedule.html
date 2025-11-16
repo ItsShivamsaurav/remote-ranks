@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Schedule - Peer Study</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="match.html">Match</a>
+</nav>
+<main>
+  <div class="card">
+    <h2>My sessions</h2>
+    <div id="sessions" class="grid"></div>
+  </div>
+</main>
+<script type="module">
+import { api, requireAuthRedirect } from './js/main.js';
+requireAuthRedirect();
+
+async function loadSessions() {
+  const list = await api('/sessions/me');
+  const container = document.getElementById('sessions');
+  container.innerHTML = list.map(s => `
+    <div class="card">
+      <h3>${s.subject_name}</h3>
+      <p>With: ${s.user1_name} & ${s.user2_name}</p>
+      <p>Time: ${s.scheduled_time} (${s.duration_minutes} min)</p>
+      <p>Status: <strong>${s.status}</strong></p>
+      <p>Status: <strong>${s.status}</strong></p>
+${s.meeting_link ? `<p><a href="${s.meeting_link}" target="_blank">Join Meeting</a></p>` : ''}
+
+      ${s.status === 'proposed' ? `
+        <div class="flex">
+          <button data-id="${s.session_id}" class="confirm">Confirm</button>
+          <button data-id="${s.session_id}" class="decline">Decline</button>
+        </div>` : ''}
+    </div>
+  `).join('');
+  container.querySelectorAll('.confirm').forEach(b => b.onclick = async () => {
+    await api(`/sessions/${b.dataset.id}/status`, { method: 'PUT', body: JSON.stringify({ status: 'confirmed' }) });
+    loadSessions();
+  });
+  container.querySelectorAll('.decline').forEach(b => b.onclick = async () => {
+    await api(`/sessions/${b.dataset.id}/status`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
+    loadSessions();
+  });
+}
+loadSessions();
+</script>
+</body>
+</html>

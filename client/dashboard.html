@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard - Peer Study</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<nav>
+  <a href="match.html">Match</a>
+  <a href="schedule.html">Schedule</a>
+  <a href="#" id="logout">Logout</a>
+</nav>
+<main>
+  <div class="card" id="profile"></div>
+  <div class="card">
+    <h3>Subjects</h3>
+    <div class="flex">
+      <select id="subjectSelect"></select>
+      <button id="addSubject">Add</button>
+    </div>
+    <div id="mySubjects" class="grid"></div>
+  </div>
+  <div class="card">
+    <h3>Availability</h3>
+    <div class="grid">
+      <div>
+        <label>Day</label>
+        <select id="day">
+          <option>Mon</option><option>Tue</option><option>Wed</option><option>Thu</option><option>Fri</option><option>Sat</option><option>Sun</option>
+        </select>
+      </div>
+      <div><label>Start</label><input id="start" type="time"></div>
+      <div><label>End</label><input id="end" type="time"></div>
+      <div><button id="addSlot">Add slot</button></div>
+    </div>
+    <div id="slots" class="grid"></div>
+  </div>
+</main>
+<script type="module">
+import { api, requireAuthRedirect, logout } from './js/main.js';
+requireAuthRedirect();
+document.getElementById('logout').onclick = logout;
+
+async function loadProfile() {
+  const { user, subjects, availability } = await api('/users/me');
+  document.getElementById('profile').innerHTML =
+    `<h2>Hello, ${user.name}</h2><p>${user.bio || ''}</p>`;
+  const subs = document.getElementById('mySubjects');
+  subs.innerHTML = subjects.map(s => `<span class="badge">${s.subject_name}</span>`).join('');
+  const slotEl = document.getElementById('slots');
+  slotEl.innerHTML = availability.map(a => `
+    <div class="card">
+      <strong>${a.day_of_week}</strong> ${a.start_time} - ${a.end_time}
+      <div><button data-id="${a.availability_id}" class="del">Delete</button></div>
+    </div>`).join('');
+  slotEl.querySelectorAll('.del').forEach(b => b.onclick = async () => {
+    await api(`/availability/me/${b.dataset.id}`, { method: 'DELETE' }); loadProfile();
+  });
+}
+
+async function loadSubjects() {
+  const all = await api('/subjects');
+  const sel = document.getElementById('subjectSelect');
+  sel.innerHTML = all.map(s => `<option value="${s.subject_id}">${s.subject_name}</option>`).join('');
+}
+
+document.getElementById('addSubject').onclick = async () => {
+  const id = document.getElementById('subjectSelect').value;
+  await api('/subjects/assign', { method: 'POST', body: JSON.stringify({ subject_id: id }) });
+  loadProfile();
+};
+
+document.getElementById('addSlot').onclick = async () => {
+  const day = document.getElementById('day').value;
+  const start = document.getElementById('start').value;
+  const end = document.getElementById('end').value;
+  await api('/availability/me', { method: 'POST', body: JSON.stringify({ day_of_week: day, start_time: start, end_time: end }) });
+  loadProfile();
+};
+
+loadProfile();
+loadSubjects();
+</script>
+</body>
+</html>
