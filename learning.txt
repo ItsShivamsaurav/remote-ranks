@@ -1,0 +1,79 @@
+const [rows] = await pool.query('SELECT * FROM sessions WHERE session_id=?', [session_id]);
+console.log(rows); 
+// [ { session_id: 123, user_id: 45, ... } ]
+
+const [rows, fields] = await pool.query(...);
+rows → the actual query results (array of objects, one per row).
+fields → metadata about the columns.
+
+const [[session]] = await pool.query('SELECT * FROM sessions WHERE session_id=?', [session_id]);
+First [ ... ] → destructures the outer array returned by pool.query (grabs rows).
+Second [ ... ] → destructures the rows array itself (grabs the first row object).
+session → now holds the actual row object { session_id: 123, user_id: 45, ... }.
+
+Equivalent Code Without Double Brackets
+const [rows] = await pool.query('SELECT * FROM sessions WHERE session_id=?', [session_id]);
+const session = rows[0];
+
+
+http://localhost:5500/verify.html?token=14f5e60be92aa73365e2199cbeeb0d5c1a0a07c0ab4c43d59b07a4aac5e73c1a i opened this link but it automatically redirects to http://localhost:5500/verify
+he root of the problem: the redirect from
+http://localhost:5500/verify.html?token=...
+http://localhost:5500/verify
+sn’t coming from your frontend code — it’s caused by the static server (npx serve) you’re using. By default, serve rewrites URLs for “single‑page applications” (SPA mode). That means it strips off .html and query strings, and serves /verify instead of /verify.html?token=....
+Why this matters
+Your verify.html script relies on window.location.search to read the token.
+
+When serve rewrites the URL to /verify, the query string is lost.
+
+That’s why you keep seeing null.
+Option A: Disable SPA rewrites
+Run serve with the --single flag off. By default, serve assumes SPA mode. Instead, explicitly tell it to serve static files:
+
+bash
+npx serve -l 5500 --no-single
+This way, verify.html?token=... will be served as‑is, without rewriting.
+
+Option B: Rename your file
+If you want the link to be /verify?token=... (without .html), rename your file to verify/index.html.
+
+Then http://localhost:5500/verify?token=... will serve that file.
+
+The query string will remain intact.
+Option C: Use another static server
+If you don’t want to tweak serve, you can use http-server (another npm package) which doesn’t rewrite URLs by default:
+
+bash
+npx http-server -p 5500
+
+
+
+[its_okay@Brothers client]$ npx http-server -p 5500 Need to install the following packages: http-server@14.1.1 Ok to proceed? (y) y Starting up http-server, serving ./ http-server version: 14.1.1 http-server settings: CORS: disabled Cache: 3600 seconds Connection Timeout: 120 seconds Directory Listings: visible AutoIndex: visible Serve GZIP Files: false Serve Brotli Files: false Default File Extension: none Access to fetch at 'http://localhost:4000/api/auth/login' from origin 'http://127.0.0.1:5500' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: The 'Access-Control-Allow-Origin' header has a value 'http://localhost:5500' that is not equal to the supplied origin. Have the server send the header with a valid value.
+the CORS mismatch problem. Let’s break it down:
+
+🔎 What’s happening
+Your frontend is being served at http://127.0.0.1:5500 (notice the IP).
+
+Your backend is running at http://localhost:4000.
+
+The backend is configured to allow requests only from http://localhost:5500.
+
+Since the browser sees the frontend origin as http://127.0.0.1:5500, the CORS check fails — 127.0.0.1 and localhost are technically different origins.
+npx http-server -p 5500 -a localhost
+Then your frontend will be served at http://localhost:5500.
+Option B: Update backend CORS settings
+Configure your backend to accept both localhost and 127.0.0.1. For example, in Express with cors:
+import cors from 'cors';
+
+app.use(cors({
+  origin: ['http://localhost:5500', 'http://127.0.0.1:5500']
+}));
+Option C: Allow all origins (for local dev only)
+If you’re just testing locally, you can temporarily allow all origins:
+app.use(cors({ origin: '*' }));
+
+
+ npx http-server -p 5500 -a localhost
+ npx serve -l 5500
+
+ <button data-id="${p.user_id}" class="overlap">Suggest overlap</button> 

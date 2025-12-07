@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Verify Account</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="card">
+    <h2>Email Verification</h2>
+    <p id="msg">Verifying...</p>
+  </div>
+</main>
+<script type="module">
+import { api } from './js/main.js';
+
+console.log(window.location.href);
+console.log(window.location.search);
+const params = new URLSearchParams(window.location.search);
+console.log('URL Parameters:', params.toString());
+const token = params.get('token');
+console.log('Token from URL:', token);
+
+(async () => {
+  try {
+    const res = await api(`/auth/verify/${token}`);
+    document.getElementById('msg').textContent = res.message;
+  } catch (err) {
+    document.getElementById('msg').textContent = err.message;
+  }
+})();
+</script>
+</body>
+</html>

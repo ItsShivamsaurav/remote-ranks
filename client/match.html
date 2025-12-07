@@ -37,7 +37,7 @@ document.getElementById('search').onclick = async () => {
     <div class="card">
       <h3>${p.name}</h3><p>${p.bio || ''}</p>
       <div class="flex">
-        <button data-id="${p.user_id}" class="overlap">Suggest overlap</button>
+         
         <button data-id="${p.user_id}" data-subject="${subject_id}" class="propose">Propose session</button>
       </div>
     </div>`).join('');

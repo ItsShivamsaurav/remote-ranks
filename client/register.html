@@ -27,9 +27,10 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = Object.fromEntries(new FormData(form).entries());
   try {
-    const { token } = await api('/auth/register', { method: 'POST', body: JSON.stringify(payload) });
-    setToken(token);
-    window.location.href = 'dashboard.html';
+    const message = await api('/auth/register', { method: 'POST', body: JSON.stringify(payload) });
+    // setToken(token);
+    alert(message);
+    window.location.href = 'login.html';
   } catch (err) { msg.textContent = err.message; }
 });
 </script>

@@ -6,6 +6,13 @@ export function getToken() {
 export function setToken(t) {
   localStorage.setItem('token', t);
 }
+export function setUser(user) {
+  localStorage.setItem('user', JSON.stringify(user));
+}
+export function getUser() {
+  const user = localStorage.getItem('user');
+  return user ? JSON.parse(user) : null;
+}
 export async function api(path, options = {}) {
   const headers = options.headers || {};
   if (!headers['Content-Type'] && !(options.body instanceof FormData)) {

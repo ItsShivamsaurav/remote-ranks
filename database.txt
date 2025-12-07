@@ -1,0 +1,15 @@
+mysql \
+  -u peer_study_myselfcent \
+  -p \
+  -h i7d01t.h.filess.io \
+  -P 61002 \
+  --ssl-mode=DISABLED
+
+
+
+mariadb \
+  -u peer_study_myselfcent \
+  -p \
+  -h i7d01t.h.filess.io \
+  -P 61002 \
+  --ssl=0

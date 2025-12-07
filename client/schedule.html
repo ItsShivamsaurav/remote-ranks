@@ -17,9 +17,8 @@
   </div>
 </main>
 <script type="module">
-import { api, requireAuthRedirect } from './js/main.js';
+import { api, requireAuthRedirect, getUser } from './js/main.js';
 requireAuthRedirect();
-
 async function loadSessions() {
   const list = await api('/sessions/me');
   const container = document.getElementById('sessions');
@@ -30,11 +29,11 @@ async function loadSessions() {
       <p>Time: ${s.scheduled_time} (${s.duration_minutes} min)</p>
       <p>Status: <strong>${s.status}</strong></p>
       <p>Status: <strong>${s.status}</strong></p>
-${s.meeting_link ? `<p><a href="${s.meeting_link}" target="_blank">Join Meeting</a></p>` : ''}
+${s.status == 'confirmed' ? `<p><a href="${s.meeting_link}" target="_blank">Join Meeting</a></p>` : ''}
 
       ${s.status === 'proposed' ? `
         <div class="flex">
-          <button data-id="${s.session_id}" class="confirm">Confirm</button>
+          ${getUser().user_id == s.user1_id ? "" :`<button data-id="${s.session_id}" class="confirm">Confirm</button>`}
           <button data-id="${s.session_id}" class="decline">Decline</button>
         </div>` : ''}
     </div>

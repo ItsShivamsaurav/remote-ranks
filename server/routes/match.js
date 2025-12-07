@@ -4,7 +4,6 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Find peers by subject with optional availability overlap count.
 router.get('/peers', requireAuth, async (req, res) => {
   const { subject_id } = req.query;
   const { user_id } = req.user;
@@ -22,7 +21,6 @@ router.get('/peers', requireAuth, async (req, res) => {
   res.json(rows);
 });
 
-// Find first overlapping availability between current user and a peer (auto-suggest time)
 router.get('/overlap/:peerId', requireAuth, async (req, res) => {
   const { user_id } = req.user;
   const { peerId } = req.params;
@@ -30,7 +28,6 @@ router.get('/overlap/:peerId', requireAuth, async (req, res) => {
   const [a1] = await pool.query('SELECT day_of_week, start_time, end_time FROM availability WHERE user_id=?', [user_id]);
   const [a2] = await pool.query('SELECT day_of_week, start_time, end_time FROM availability WHERE user_id=?', [peerId]);
 
-  // naive overlap finder
   for (const s1 of a1) {
     const sameDay = a2.filter(s2 => s2.day_of_week === s1.day_of_week);
     for (const s2 of sameDay) {
